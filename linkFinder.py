@@ -275,35 +275,3 @@ def parseFile():
 
 main()
 
-
-
-
-#This is useless but can server as a soup way to process HTML
-"""
-def tight(soup, type_of_link):
-        print("Tight HTML Processing for " +type_of_link)
-        links = {}
-        if type_of_link == 'IMG':
-                print ("Getting all <src img> links and testing link status")
-                links = [x['src'] for x in content_soup.findAll('img')] #unclean links list
-        if type_of_link == 'LINK':
-                print ("Getting all <a href> links and testing link status")
-                links = [x['href'] for x in content_soup.findAll('a')]
-        cleaned = clean(links, urlparse(url_string).hostname)
-        return cleaned
-"""
-
-
-#Previously Used way to check for valid URL.  Now we pass to urlopen and get code.
-#So the internet checks for valid url instead of manual regex.
-
-
-
-"""
-#Boolean check for valid website
-def check(url_string):
-  if urlopen(url_string).getcode() == 200:
-    return True
-  else:
-    return False
-"""
