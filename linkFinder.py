@@ -12,7 +12,7 @@ from optparse import OptionParser
 #from bs4 import BeautifulSoup as bs
 from optparse import OptionParser
 from urlparse import urlparse
-import requests
+#mport requests
 
 
 
@@ -75,7 +75,7 @@ def output(links):
   httpstatus = None
     #loop to allow the user to print the urls by status code
   while httpstatus != 'quit':      
-    httpstatus = raw_input('(1) Inspect Broken links\n(2) Enter a new Address\n(3) Run again\n(4) Quit\n: ')
+    httpstatus = raw_input('(1) Inspect Broken links\n(2) Enter a new Address\n(3) Run again\n(4) Quit and Write output to file\n: ')
     if httpstatus == '1':
       httpstatus = raw_input("Enter Status code to check: ") 
       try: 
@@ -90,8 +90,8 @@ def output(links):
     elif httpstatus == '2':
       main()
     elif httpstatus =='4':
-      print 'Writing To XML Log File currentLinks.xml'
-      writeFile(links)
+      #print 'Writing To XML Log File currentLinks.xml'
+      #writeFile(links, returncodes)
       sys.exit()
     elif httpstatus =='3':
       output(links)
@@ -175,7 +175,7 @@ def getFile():
     print ("[file not found, using command line for input]\n")
     return False
 
-  choice = raw_input("\nLinks file found\nwould you like to check links in file? 1:Yes\n2:No ")  
+  choice = raw_input("\nLinks file found\nwould you like to check links in file?\n1:Yes\n2:No ")  
   if choice == '1':
     readFile()
     sys.exit()
@@ -199,7 +199,7 @@ def readFile():
 
 
 
-def writeFile(links):
+def writeFile(links, returncodes):
   E = lxml.builder.ElementMaker()
   ROOT = E.root
   DOC = E.doc
@@ -209,16 +209,15 @@ def writeFile(links):
   elif inputType == '2':
     name='LINK'
 
-  output_file = ROOT(
-                DOC(
-                    FIELD1(input_site, name=name)
-                      ))
+  output_file = ROOT(FIELD1(input_site, name=name))
   for link in links:
-    output_file.append(DOC(FIELD1(link, name=name)))
+    output_file.append(DOC(FIELD1(link, code=returncodes[int()])))
 
+  print lxml.etree.tostring(output_file, pretty_print=True)
   try:
-    with open("currentLinks.xml", "w") as f:
-      f.write(output_file)
+    f = open("currentLinks.xml", "rw")
+    f.write(output_file)
+    f.close()
   except:
     print("Unable to open file for writing")
 
