@@ -1,6 +1,11 @@
 import time
 import re
 import sys
+import lxml.etree
+import lxml.builder
+import msvcrt as m
+
+from xml.dom.minidom import parse, parseString
 
 from urllib2 import urlopen, HTTPError
 from optparse import OptionParser
@@ -9,82 +14,101 @@ from optparse import OptionParser
 from urlparse import urlparse
 import requests
 
+
+
 def main():
-	while (True):
-		input_site = raw_input('Enter website (ex: http://newsite.qa.aistg.com) : ')
-			#clean input or end program
-		if input_site == 'quit':
+  global input_site 
+  global inputType
+  input_bool = getFile()
+  while (input_bool == False):
+    input_site = raw_input('Enter website (ex: http://newsite.qa.aistg.com) : ')
+		#clean input or end program
+    if input_site == 'quit':
 			sys.exit()
 
 		#check valid site
-		if check(input_site):
+    if check(input_site):
 			break
-		print ('Invalid host address.  Please re-enter or type quit to end.')
+
+    print ('Invalid host address.  Please re-enter or type quit to end.')
 
 	#Get all links on site
-	choice = raw_input('(1)To search Images\n(2)To search Links\n: ')
-	if choice == '1':
-		links = getLinks(input_site, 'IMG')
-	if choice == '2': 
-		links = getLinks(input_site, 'LINK')
+  inputType = raw_input('(1)To search Images\n(2)To search Links\n: ')
+  if inputType == '1':
+    links = getLinks(input_site, 'IMG')
+  elif inputType == '2': 
+    links = getLinks(input_site, 'LINK')
 
-	print ('Number of links found: ' + str(len(links)))		
+  print ('Number of links found: ' + str(len(links)))		
 	#lets format the output nicely
 
- 	returncodes = {}
-   	x = 1
-   	y = len(links)
-   	t0 = time.clock()
   
+  output(links)
+  
+def output(links):
+  returncodes = {}
+  link_pos = 1
+  num_links = len(links)
+  t0 = time.clock()
+  for link in links:
+    print (link)
+  for link in links:
+    print ("checking %d of %d" %(link_pos,num_links))
+    try:
+      code = urlopen(link).getcode()
+    except HTTPError as e :
+      print('error %d from %s' %(e.code, link))
+      code = e.code
+    except:
+      code= 0
     
-   	for link in links:
-# when there is a 403 like code it assigns it to 0       
-   	    try:    
-   	        code = urlopen(link).getcode()
-   	    except HTTPError as e :
-            #print e.__class__.__name__
-            #print e.code
-   	        print('error %d from %s' %(e.code, link))
-            # %S is string and %d decimal look up others
-   	        code = e.code
-   	    except:
-   	        code= 0
-              
-   	    if code in returncodes:
-   	        returncodes[code].append(link)
-   	    else: 
-   	        returncodes[code] = [link]   
-   	    print('Checking URL %d of %d' %(x,y))
-   	    x+=1
-   	print('took %d secs' % (time.clock() - t0))
-    #returns the httpstatus codes that were seen
-   	print(returncodes.keys())
-   	httpstatus = None
+    if code in returncodes:
+      returncodes[code].append(link)
+    else:
+      returncodes[code] = [link]   
+    
+    link_pos+=1
+
+  print('took %d secs' % (time.clock() - t0))
+    #returns themd httpstatus codes that were seen
+  print(returncodes.keys())
+  httpstatus = None
     #loop to allow the user to print the urls by status code
-   	while httpstatus != 'quit':      
-   	    httpstatus = raw_input('Enter status code that is avalible or type quit spelling counts :P: ')
-   	    
-   	    if httpstatus == 'url':
-   	    	main()
-   	    elif httpstatus =='quit':
-        	print 'exiting'
-   	    else:
-   	        try:    
-   	            #print(returncodes[int(httpstatus)] ) 
-   	            for lines in returncodes[int(httpstatus)]:
-   	            	print lines
-   	        except:
-   	            print('Invalid Input')
+  while httpstatus != 'quit':      
+    httpstatus = raw_input('(1) Inspect Broken links\n(2) Enter a new Address\n(3) Run again\n(4) Quit\n: ')
+    if httpstatus == '1':
+      httpstatus = raw_input("Enter Status code to check: ") 
+      try: 
+        for lines in returncodes[int(httpstatus)]:
+          print lines
+        print ("Press Enter to continue.....")
+        m.getch()
+      except:
+        print ("Status code not found")
+        print(returncodes.keys())
+
+    elif httpstatus == '2':
+      main()
+    elif httpstatus =='4':
+      print 'Writing To XML Log File currentLinks.xml'
+      writeFile(links)
+      sys.exit()
+    elif httpstatus =='3':
+      output(links)
+    else:
+      print('Invalid Input')
 	#main done
 
-
-#Boolean check for valid website
-def check(url_string):
-	if urlopen(url_string).getcode() == 200:
-		return True
-	else:
-		return False
-
+#testes the url to make sure it is valid From Tim b
+def check(test_str):
+    pattern = r'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?\xab\xbb\u201c\u201d\u2018\u2019]))'
+    if not re.search(pattern, test_str):
+        valid = False
+        print 'Invalid url format : %r' % (test_str,)
+    else:
+        print 'Valid url format   : %r' % (test_str,)
+        valid = True
+    return valid
 
 #Returns a list of links on a site
 #abstracted in case we want to process HTML in a different way, later
@@ -143,6 +167,61 @@ def process(url, type_of_link):
 #list of urls
     return urls.keys()
   
+def getFile():
+  print ("[Checking for file]\n")
+  try:
+    with open('currentLinks.xml'): pass
+  except IOError:
+    print ("[file not found, using command line for input]\n")
+    return False
+
+  choice = raw_input("\nLinks file found\nwould you like to check links in file? 1:Yes\n2:No ")  
+  if choice == '1':
+    readFile()
+    sys.exit()
+  else:
+    return False
+
+def readFile():
+  links = []
+  with open('currentLinks.xml') as file_in:
+    for line in file_in:
+      links.append(line)
+
+  urls = {}
+  instances = 0
+  for link in links:
+    urls[link] = True
+    instances += 1
+    print('%d Found link %s' % (instances, link))
+        
+  print('Found %d links with %d unique URLs' % (instances, len(urls)))
+
+
+
+def writeFile(links):
+  E = lxml.builder.ElementMaker()
+  ROOT = E.root
+  DOC = E.doc
+  FIELD1 = E.field1
+  if inputType == '1':
+    name='IMG'
+  elif inputType == '2':
+    name='LINK'
+
+  output_file = ROOT(
+                DOC(
+                    FIELD1(input_site, name=name)
+                      ))
+  for link in links:
+    output_file.append(DOC(FIELD1(link, name=name)))
+
+  try:
+    with open("currentLinks.xml", "w") as f:
+      f.write(output_file)
+  except:
+    print("Unable to open file for writing")
+
 main()
 
 
@@ -166,15 +245,14 @@ def tight(soup, type_of_link):
 
 #Previously Used way to check for valid URL.  Now we pass to urlopen and get code.
 #So the internet checks for valid url instead of manual regex.
+
+
+
 """
-#testes the url to make sure it is valid From Tim b
-def check(test_str):
-    pattern = r'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?\xab\xbb\u201c\u201d\u2018\u2019]))'
-    if not re.search(pattern, test_str):
-        valid = False
-        print 'Invalid url format : %r' % (test_str,)
-    else:
-        print 'Valid url format   : %r' % (test_str,)
-        valid = True
-    return valid
+#Boolean check for valid website
+def check(url_string):
+  if urlopen(url_string).getcode() == 200:
+    return True
+  else:
+    return False
 """
