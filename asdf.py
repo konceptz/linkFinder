@@ -139,7 +139,7 @@ def clean(pattern, url):
 #Process html into dictionary
 def process(url, type_of_link):
     #url = host+page
-    print('Opening %s...' % url)    
+    print('Opening %s...' % url)
     #scrapes the page source
     content = urlopen(url).read()
 
@@ -153,7 +153,6 @@ def process(url, type_of_link):
     # we can avoid duplicates by using a hash - will save time later
     urls = {}
     instances = 0
-
     for link in pattern.findall(content):
 
         if link[0:2] == '//':
@@ -162,9 +161,6 @@ def process(url, type_of_link):
         elif link[0] == '/':
             print('URL does not specify host, prepending '+urlparse(url).hostname)
             link = 'http://'+urlparse(url).hostname+link
-        elif link.find('\.com') == -1:
-            print('URL does not specify host, prepending '+urlparse(url).hostname)
-            link = 'http://'+urlparse(url).hostname+'/'+link
 
         urls[link] = True
         instances += 1
@@ -232,8 +228,10 @@ def writeFile(links, returncodes):
     for key in returncodes.keys():
         for link in returncodes[int(key)]:
             output.append(FIELD2(link,name=str(key)))
+    print (input_site)
     
     time_str = str(now.strftime("%Y-%m-%d-%H-%M"))
+    print (time_str)
     timefilename = inputType+"-"
     timefilename = timefilename+str(urlparse(input_site).hostname)
     timefilename = timefilename.replace("\n", "")
@@ -252,8 +250,6 @@ def writeFile(links, returncodes):
         print("Unable to open file for writing")
 
 def parseFile():
-    global input_site
-    global inputType
     lines = []
     cleaned_lines = []
     dom = parse("tempLinks.xml")
