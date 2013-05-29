@@ -11,10 +11,8 @@ from xml.dom.minidom import parse, parseString
 
 from urllib2 import urlopen, HTTPError
 from optparse import OptionParser
-#from bs4 import BeautifulSoup as bs
 from optparse import OptionParser
 from urlparse import urlparse
-#mport requests
 
 input_site = ""
 inputType = ""
