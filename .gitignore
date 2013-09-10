@@ -1,6 +1,11 @@
+#XML Generated Documents
+.xml
+
+
 #################
 ## Eclipse
 #################
+
 
 *.pydevproject
 .project
