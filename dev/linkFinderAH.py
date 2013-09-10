@@ -4,7 +4,6 @@ import re
 import sys
 import lxml.etree
 import lxml.builder
-import msvcrt as m
 import datetime
 
 from xml.dom.minidom import parse, parseString
@@ -85,8 +84,7 @@ def output(links):
             try:
                 for lines in returncodes[int(httpstatus)]:
                     print (lines)
-                print ("Press Enter to continue.....")
-                m.getch()
+                raw_input('Press Enter to continue.....')
             except:
                 print ("Status code not found")
                 print(returncodes.keys())
@@ -153,6 +151,7 @@ def process(url, type_of_link):
     # we can avoid duplicates by using a hash - will save time later
     urls = {}
     instances = 0
+
     for link in pattern.findall(content):
 
         if link[0:2] == '//':
@@ -161,6 +160,11 @@ def process(url, type_of_link):
         elif link[0] == '/':
             print('URL does not specify host, prepending '+urlparse(url).hostname)
             link = 'http://'+urlparse(url).hostname+link
+        """
+        elif link.find('\.com') == -1:
+            print('URL does not specify host, prepending '+urlparse(url).hostname)
+            link = 'http://'+urlparse(url).hostname+'/'+link
+        """
 
         urls[link] = True
         instances += 1
@@ -222,16 +226,14 @@ def writeFile(links, returncodes):
       inputType = "LNK"
     else:
       name=inputType
-    
+
     output = ROOT(FIELD1(input_site, name=name))
 
     for key in returncodes.keys():
         for link in returncodes[int(key)]:
             output.append(FIELD2(link,name=str(key)))
-    print (input_site)
-    
+
     time_str = str(now.strftime("%Y-%m-%d-%H-%M"))
-    print (time_str)
     timefilename = inputType+"-"
     timefilename = timefilename+str(urlparse(input_site).hostname)
     timefilename = timefilename.replace("\n", "")
@@ -250,6 +252,8 @@ def writeFile(links, returncodes):
         print("Unable to open file for writing")
 
 def parseFile():
+    global input_site
+    global inputType
     lines = []
     cleaned_lines = []
     dom = parse("tempLinks.xml")
@@ -258,7 +262,7 @@ def parseFile():
     for node in dom.getElementsByTagName('Base'):
       print (node.toxml()[12:15])
       inputType = node.toxml()[12:15]
-    
+
     for node in dom.getElementsByTagName('Code'):
         lines.append(node.toxml())
 
