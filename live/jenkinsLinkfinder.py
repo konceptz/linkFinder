@@ -1,11 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#/  LinkfinderV1 - Sammy Shaar
-#   LinkfinderImgfinderCLI - Arthur Hinds
-#   JenkinsLink-IMGfinder - Arthur Hinds
-#   
 #
-#
+#---------------------------------------------------
+#   Author:     Arthur Hinds
+#   Purpose:    To scrape a web page for links
+#               and return the result into JIRA
+#               using the Selenium reporting plugin.
+#---------------------------------------------------
 #/
 from __future__ import print_function
 import os
@@ -49,7 +50,7 @@ def main():
     if check(BASE_URL):
         print('INVALID HOSTNAME')
         sys.exit()
-   
+
     links = getLinks(BASE_URL, TYPE_OF_SEARCH)
 
     print('LINKS TOTAL: ' + str(len(links)))
@@ -120,9 +121,9 @@ def check(site_string):
         else:
             return True
     except Exception, e:
-        print (e) 
-        sys.exit()        
-    
+        print (e)
+        sys.exit()
+
 # cleans links
 
 def clean(pattern, url):
@@ -340,7 +341,7 @@ a {
 </tr>
 <tr>
 <td>numTestTotal:</td>
-<td>%s</td> 
+<td>%s</td>
 </tr>
 <tr>
 <td>numTestPasses:</td>

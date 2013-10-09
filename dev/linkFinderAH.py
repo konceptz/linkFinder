@@ -1,3 +1,13 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+#
+#---------------------------------------------------
+#   Author:     Arthur Hinds
+#   Purpose:    To scrape a web page for links
+#               and create an xml document
+#               for record keeping.
+#---------------------------------------------------
+#/
 from __future__ import print_function
 import time
 import re

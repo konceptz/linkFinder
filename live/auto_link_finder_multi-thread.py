@@ -1,10 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#/  LinkfinderV1 - Sammy Shaar
-#   LinkfinderImgfinderCLI - Arthur Hinds
-#   JenkinsLink-IMGfinder - Arthur Hinds
-#   MultiThread Linkfinder - Arthur Hinds
-#
+#   Author:  Arthur Hinds
 #
 #/
 from __future__ import print_function
